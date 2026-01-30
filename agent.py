@@ -116,7 +116,16 @@ async def generate_prescription(req: GenerateRequest):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "doctor-agent", "mcp_url": MCP_SERVER_URL}
+    try:
+        models = [m.name for m in genai.list_models()]
+    except Exception as e:
+        models = f"Error listing models: {str(e)}"
+    return {
+        "status": "ok", 
+        "service": "doctor-agent", 
+        "mcp_url": MCP_SERVER_URL,
+        "available_models": models
+    }
 
 if __name__ == "__main__":
     import uvicorn
