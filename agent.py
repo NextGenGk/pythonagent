@@ -80,8 +80,7 @@ def fetch_patient_data_tool(pid: str) -> str:
         return f"Failed to connect to MCP Server: {str(e)}"
 
 # Setup LLM with Tools
-# We use models/gemini-2.5-flash as it was verified in health check
-llm = ChatGoogleGenerativeAI(model="models/gemini-2.5-flash", google_api_key=GOOGLE_API_KEY)
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=GOOGLE_API_KEY)
 llm_with_tools = llm.bind_tools([fetch_patient_data_tool])
 
 class GenerateRequest(BaseModel):
