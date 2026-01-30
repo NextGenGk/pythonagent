@@ -158,6 +158,10 @@ async def generate_prescription(req: GenerateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "doctor-agent", "model": "gemini-1.5-flash"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
