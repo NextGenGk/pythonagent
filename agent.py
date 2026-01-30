@@ -99,17 +99,9 @@ async def generate_prescription(req: GenerateRequest):
     """
     security_status = False
     
-    # --- 1. ArmorIQ Security Check ---
-    if armoriq:
-        try:
-            # Capture the plan: Ask ArmorIQ "What should we do given this prompt?"
-            secure_prompt = f"User wants to generate a prescription: '{req.prompt}'. Plan the retrieval of patient data for PID {req.pid}."
-            plan_capture = armoriq.capture_plan(llm="gpt-4", prompt=secure_prompt)
-            # Assuming capture success implies intent verified
-            security_status = True
-        except Exception as e:
-            print(f"ArmorIQ Verification Failed: {e}")
-            security_status = False
+    # --- 1. ArmorIQ Security Check disabled for debug ---
+    security_status = False
+    # if armoriq: ...
 
     # --- 2. Manual Agent Loop (Robust) ---
     try:
