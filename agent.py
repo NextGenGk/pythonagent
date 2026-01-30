@@ -94,7 +94,62 @@ class GenerateRequest(BaseModel):
 
 @app.post("/generate")
 async def generate_prescription(req: GenerateRequest):
-    return {"status": "success", "prescription_content": "Stub output", "security_verified": False}
+    """
+    Agent Endpoint with Manual Logic
+    """
+    security_status = False
+    
+    # --- 1. ArmorIQ ---
+    try:
+        if armoriq:
+            plan_capture = armoriq.capture_plan(llm="gpt-4", prompt=f"Prescription for {req.pid}: {req.prompt}")
+            security_status = True
+    except Exception as e:
+        print(f"ArmorIQ Failed: {e}")
+
+    # --- 2. Manual Agent Loop (Robust) ---
+    try:
+        messages = [
+            HumanMessage(
+                content=f"You are a doctor assistant. Fetch patient data for PID '{req.pid}' then generate a prescription based on: {req.prompt}"
+            )
+        ]
+        
+        # Call 1: LLM decides to use tool or output text
+        try:
+            response_1 = await llm_with_tools.ainvoke(messages)
+        except Exception as llm_err:
+            return {"status": "error", "detail": f"LLM Call 1 Failed: {str(llm_err)}"}
+            
+        messages.append(response_1)
+        final_content = response_1.content
+
+        # Check for tool calls
+        if response_1.tool_calls:
+            for tool_call in response_1.tool_calls:
+                # Execute Tool
+                if tool_call["name"] == "fetch_patient_data_tool":
+                    try:
+                        pid_arg = tool_call["args"].get("pid")
+                        tool_output = fetch_patient_data_tool.invoke({"pid": pid_arg})
+                        messages.append(ToolMessage(content=tool_output, tool_call_id=tool_call["id"]))
+                    except Exception as tool_err:
+                        return {"status": "error", "detail": f"Tool Execution Failed: {str(tool_err)}"}
+            
+            # Call 2: LLM generates final answer
+            try:
+                response_2 = await llm_with_tools.ainvoke(messages)
+                final_content = response_2.content
+            except Exception as llm_err_2:
+                return {"status": "error", "detail": f"LLM Call 2 Failed: {str(llm_err_2)}"}
+        
+        return {
+            "status": "success",
+            "prescription_content": final_content,
+            "security_verified": security_status
+        }
+    except Exception as e:
+        return {"status": "error", "detail": f"General Loop Error: {str(e)}"}
 
 
 @app.get("/health")
