@@ -94,60 +94,7 @@ class GenerateRequest(BaseModel):
 
 @app.post("/generate")
 async def generate_prescription(req: GenerateRequest):
-    """
-    Agent Endpoint with Manual Logic
-    """
-    security_status = False
-    
-    # --- 1. ArmorIQ Security Check disabled for debug ---
-    security_status = False
-    # if armoriq: ...
-
-    # --- 2. Manual Agent Loop (Robust) ---
-    try:
-        messages = [
-            HumanMessage(
-                content=f"You are a doctor assistant. Fetch patient data for PID '{req.pid}' then generate a prescription based on: {req.prompt}"
-            )
-        ]
-        
-        # Call 1: LLM decides to use tool or output text
-        print(f"Invoking LLM for First Step...")
-        response_1 = await llm_with_tools.ainvoke(messages)
-        messages.append(response_1)
-        
-        final_content = response_1.content
-
-        # Check for tool calls
-        if response_1.tool_calls:
-            print(f"Tool Call Detected: {response_1.tool_calls}")
-            for tool_call in response_1.tool_calls:
-                # Execute Tool
-                if tool_call["name"] == "fetch_patient_data_tool":
-                    # Extract arg (LangChain returns dict in args)
-                    pid_arg = tool_call["args"].get("pid")
-                    
-                    # Manual Invoke of the python function
-                    tool_output = fetch_patient_data_tool.invoke({"pid": pid_arg})
-                    
-                    print(f"Tool Output: {str(tool_output)[:100]}...")
-                    
-                    # Append result to history
-                    messages.append(ToolMessage(content=tool_output, tool_call_id=tool_call["id"]))
-            
-            # Call 2: LLM generates final answer given the tool output
-            print("Invoking LLM for Final Answer...")
-            response_2 = await llm_with_tools.ainvoke(messages)
-            final_content = response_2.content
-        
-        return {
-            "status": "success",
-            "prescription_content": final_content,
-            "security_verified": security_status
-        }
-    except Exception as e:
-        print(f"Agent Loop Error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    return {"status": "success", "prescription_content": "Stub output", "security_verified": False}
 
 
 @app.get("/health")
