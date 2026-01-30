@@ -18,8 +18,8 @@ MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "https://pymcp.vercel.app")
 # Setup Gemini
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
-    # Using 1.5-flash as it is the most robust/fast for tools
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Using the verified available model from list
+    model = genai.GenerativeModel('models/gemini-2.5-flash')
 else:
     model = None
     print("WARNING: GOOGLE_API_KEY not set")
@@ -77,7 +77,7 @@ async def generate_prescription(req: GenerateRequest):
     # 1. ArmorIQ Secure Intent
     if armoriq:
         try:
-            armoriq.capture_plan(llm="gpt-4", prompt=f"Generate prescription for {req.pid}: {req.prompt}")
+            armoriq.capture_plan(llm="gemini-2.5-flash", prompt=f"Generate prescription for {req.pid}: {req.prompt}")
             security_verified = True
         except:
             pass
