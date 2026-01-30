@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-dotenv
+langchain>=0.1.0
+langchain-google-genai
+langchain-core
+armoriq-sdk
+httpx
+pydantic
