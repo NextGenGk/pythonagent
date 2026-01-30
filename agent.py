@@ -85,7 +85,7 @@ def fetch_patient_data_tool(pid: str) -> str:
 
 # Setup LLM with Tools
 # We use simple bind_tools which works on most recent langchain versions
-llm = ChatGoogleGenerativeAI(model="models/gemini-1.5-flash", google_api_key=GOOGLE_API_KEY)
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
 llm_with_tools = llm.bind_tools([fetch_patient_data_tool])
 
 class GenerateRequest(BaseModel):
